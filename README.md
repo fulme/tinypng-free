@@ -11,7 +11,7 @@ $ npm install --save-dev gulp-tinypng-free
 ## How to use
 ```
 var gulp = require('gulp');
-var tiny = require('gulp-tinypng-free');
+var tinypng = require('tinypng-free');
 
 gulp.task('tinypng', function(cb) {
     gulp.src('src/*')
@@ -52,6 +52,6 @@ need upload files, so it may be unstable.Recommand to move this to the end of ta
 尽量放到任务的最后一步，因为这个过程是要上传图片，再下载图片的，和网络稳定有关
 
 ## Reference
-https://github.com/creativeaura/gulp-tinypng
-https://github.com/stnvh/gulp-tinypng-compress
-https://github.com/paper/gulp-tinypng-free/
+https://github.com/creativeaura/gulp-tinypng  
+https://github.com/stnvh/gulp-tinypng-compress  
+https://github.com/paper/gulp-tinypng-free/  
