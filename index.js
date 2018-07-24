@@ -14,9 +14,9 @@ var log = util.log.bind(null, PLUGIN_NAME);
 
 function tinypngFree(opt) {
   var opt = opt || {};
-  var signFilePath = opt.signFilePath || CATCH_FILE;
+  var signFile = opt.signFile || CATCH_FILE;
   var force = opt.force || false;
-  var hasher = new Hasher(signFilePath).populate();
+  var hasher = new Hasher(signFile).populate();
 
   var stream = through.obj(function(file, enc, callback) {
     if (file.isNull()) {
@@ -39,7 +39,7 @@ function tinypngFree(opt) {
         return callback(null, null);
       }
 
-      tinypng(file, function (data) {
+      tinypng(file, function(data) {
         let tinyFile = file.clone();
 
         if (data) {
@@ -51,10 +51,10 @@ function tinypngFree(opt) {
     }
   });
 
-  stream.on('error', function (err) {
-    log(': error ', util.colors.red(err));
-  })
-    .on('end', function () {
+  stream.on('error', function(err) {
+      log(': error ', util.colors.red(err));
+    })
+    .on('end', function() {
       let str = '';
       let total = 0;
       let originTotal = 0;
@@ -102,29 +102,32 @@ function Hasher(sigFile) {
         filepath = file.path.replace(file.cwd, ''),
         result = (filepath in this.sigs && md5 === this.sigs[filepath]);
 
-      return cb ? this : { match: result, hash: md5 };
+      return cb ? this : {
+        match: result,
+        hash: md5
+      };
     },
     populate: function() {
       var data = false;
 
-      if(this.sigFile) {
+      if (this.sigFile) {
         try {
           data = fs.readFileSync(this.sigFile, 'utf-8');
-          if(data) data = JSON.parse(data);
-        } catch(err) {
+          if (data) data = JSON.parse(data);
+        } catch (err) {
           // meh
         }
 
-        if(data) this.sigs = data;
+        if (data) this.sigs = data;
       }
 
       return this;
     },
     write: function() {
-      if(this.changed) {
+      if (this.changed) {
         try {
           fs.writeFileSync(this.sigFile, JSON.stringify(this.sigs));
-        } catch(err) {
+        } catch (err) {
           // meh
         }
       }
@@ -141,27 +144,30 @@ function tinypng(file, callback) {
     url: 'https://tinypng.com/web/shrink',
     method: "post",
     headers: {
-      "Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      "Accept-Encoding" : "gzip, deflate",
-      "Accept-Language" : "zh-cn,zh;q=0.8,en-us;q=0.5,en;q=0.3",
-      "Cache-Control" : "no-cache",
-      "Pragma" : "no-cache",
-      "Connection"  : "keep-alive",
-      "Host" : "tinypng.com",
-      "DNT" : 1,
-      "Referer" : "https://tinypng.com/",
-      "User-Agent" : "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:42.0) Gecko/20100101 Firefox/42.0"
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Encoding": "gzip, deflate",
+      "Accept-Language": "zh-cn,zh;q=0.8,en-us;q=0.5,en;q=0.3",
+      "Cache-Control": "no-cache",
+      "Pragma": "no-cache",
+      "Connection": "keep-alive",
+      "Host": "tinypng.com",
+      "DNT": 1,
+      "Referer": "https://tinypng.com/",
+      "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:42.0) Gecko/20100101 Firefox/42.0"
     },
     body: file.contents
   }, function(error, response, body) {
     var results, filename;
 
-    if(!error) {
+    if (!error) {
       filename = path.basename(file.path);
       results = JSON.parse(body);
 
-      if(results.output && results.output.url) {
-        request.get({ url: results.output.url, encoding: null }, function (err, res, body) {
+      if (results.output && results.output.url) {
+        request.get({
+          url: results.output.url,
+          encoding: null
+        }, function(err, res, body) {
           if (err) {
             SKIPPED.push(filename);
             log('[error]: ', filename + ' ' + err);
@@ -169,8 +175,8 @@ function tinypng(file, callback) {
             var output = results.output;
 
             log(': [compressing]', util.colors.green('Ok ') +
-              file.relative
-              + util.colors.green(' (' + (output.ratio * 100).toFixed(1) + '%)'));
+              file.relative +
+              util.colors.green(' (' + (output.ratio * 100).toFixed(1) + '%)'));
 
             COMPRESSED.push({
               name: filename,
