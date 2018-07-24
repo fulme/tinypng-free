@@ -11,11 +11,11 @@ $ npm install --save-dev gulp-tinypng-free
 ## How to use
 ```
 var gulp = require('gulp');
-var tinypng = require('tinypng-free');
+var tinypngFree = require('gulp-tinypng-free');
 
 gulp.task('tinypng', function(cb) {
     gulp.src('src/*')
-        .pipe(tinypng({}))
+        .pipe(tinypngFree({}))
         .pipe(gulp.dest('dist'));
 });
 ```
@@ -54,4 +54,4 @@ need upload files, so it may be unstable.Recommand to move this to the end of ta
 ## Reference
 https://github.com/creativeaura/gulp-tinypng  
 https://github.com/stnvh/gulp-tinypng-compress  
-https://github.com/paper/gulp-tinypng-free/  
+https://github.com/paper/gulp-tinypng-nokey  
