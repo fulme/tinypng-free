@@ -1,0 +1,57 @@
+# gulp-tinypng-free
+Use the upload api of tinypng's homeage to compress images, so can use it without key.
+
+模拟用户上传和下载的行为，来得到压缩图片，突破使用官网api每月500张限制
+
+## Install
+```
+$ npm install --save-dev gulp-tinypng-free
+```
+
+## How to use
+```
+var gulp = require('gulp');
+var tiny = require('gulp-tinypng-free');
+
+gulp.task('tinypng', function(cb) {
+    gulp.src('src/*')
+        .pipe(tinypng({}))
+        .pipe(gulp.dest('dist'));
+});
+```
+
+## API
+### tinypngFree([options])
+
+Returns Stream containing compressed images
+
+#### options
+Type: `Object` / `String`
+Default: `{}`
+
+Sets options described below from its properties.
+
+#### options.sigFile
+Type: `String`
+Default: `./sign.json`
+
+If set to a filename, it will compare existing source file md5 signatures against those found in the file's json data. When the signatures match, the file is skipped from being minified again, allowing you to better stay within your API request limits. When an image is minified, the md5 signature is determined from the unminified source image and written to the file at options.sigFile (a suggested location would be somewhere under your source control).
+
+Signatures are based off the unminified source image, so that when the source changes it will be re-minified and re-written to the destination file.
+
+#### options.force
+Type: `Boolean`
+Default: `false`
+
+Force compress images regardless of signature. Value can either be `true` to force all images, or a glob pattern string to match against the filename(s).
+
+
+## Intro
+need upload files, so it may be unstable.Recommand to move this to the end of task.
+
+尽量放到任务的最后一步，因为这个过程是要上传图片，再下载图片的，和网络稳定有关
+
+## Reference
+https://github.com/creativeaura/gulp-tinypng
+https://github.com/stnvh/gulp-tinypng-compress
+https://github.com/paper/gulp-tinypng-free/

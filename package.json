@@ -1,0 +1,36 @@
+{
+  "name": "tinypng-free",
+  "version": "1.0.0",
+  "description": "TinyPNG API wrapper for compressing PNG & JPG images",
+  "main": "index.js",
+  "scripts": {
+    "test": "gulp test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fulme/tinypng-free.git"
+  },
+  "devDependencies": {
+    "gulp": "~3.9.1",
+    "gulp-util": "~2.2.14",
+    "request": "~2.31.0",
+    "through2": "~0.4.2",
+    "crypto": "^1.0.1"
+  },
+  "keywords": [
+    "gulp",
+    "tinypng",
+    "compress",
+    "png",
+    "jpg",
+    "jpeg",
+    "imagemin"
+  ],
+  "author": "fulme",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "bugs": {
+    "url": "https://github.com/fulme/tinypng-free/issues"
+  },
+  "homepage": "https://github.com/fulme/tinypng-free#readme"
+}
