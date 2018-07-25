@@ -13,10 +13,11 @@ var PLUGIN_NAME = 'gulp-tinypng-free';
 var log = util.log.bind(null, PLUGIN_NAME);
 
 function tinypngFree(opt) {
-  var opt = opt || {};
-  var signFile = opt.signFile || CATCH_FILE;
+  opt = opt || {};
+
+  var sigFile = opt.sigFile || CATCH_FILE;
   var force = opt.force || false;
-  var hasher = new Hasher(signFile).populate();
+  var hasher = new Hasher(sigFile).populate();
 
   var stream = through.obj(function(file, enc, callback) {
     if (file.isNull()) {
