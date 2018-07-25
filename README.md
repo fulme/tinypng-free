@@ -1,7 +1,8 @@
 # gulp-tinypng-free
 Use the upload api of tinypng's homeage to compress images, so can use it without key.
 
-模拟用户上传和下载的行为，来得到压缩图片，突破使用官网api每月500张限制
+- 模拟用户上传和下载的行为，来得到压缩图片，突破使用官网api每月500张限制
+- 通过hash摘要缓存已压缩的文件，只针对有变化的文件进行压缩，避免了重复劳动，提高效率
 
 ## Install
 ```
