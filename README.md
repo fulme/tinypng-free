@@ -32,7 +32,7 @@ Default: `{}`
 
 Sets options described below from its properties.
 
-#### options.sigFile
+#### options.signFile
 Type: `String`
 Default: `./sign.json`
 
