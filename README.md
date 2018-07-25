@@ -27,7 +27,7 @@ gulp.task('tinypng', function(cb) {
 Returns Stream containing compressed images
 
 #### options
-Type: `Object` / `String`
+Type: `Object`
 Default: `{}`
 
 Sets options described below from its properties.
