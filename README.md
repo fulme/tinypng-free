@@ -4,6 +4,13 @@ Use the upload api of tinypng's homeage to compress images, so can use it withou
 - 模拟用户上传和下载的行为，来得到压缩图片，突破使用官网api每月500张限制
 - 通过hash摘要缓存已压缩的文件，只针对有变化的文件进行压缩，避免了重复劳动，提高效率
 
+## Why
+图片是影响页面加载速度的重要因素，文本代码通常不会很大，在服务端开启`gzip`压缩可以有一个比较大的压缩率。
+但图片本身就是经过压缩的，所以`gzip`基本不会有任何作用，所以[tinypng](https://tinypng.com/)值得你拥有！
+保守估计，本插件可以压缩掉**40% ~ 50%**, 而对图片质量影响很小！
+相比而言，大家熟知的[imagemin](https://www.npmjs.com/package/gulp-imagemin)能压缩10%就不错了。
+
+
 ## Install
 ```
 $ npm install --save-dev gulp-tinypng-free

@@ -1,6 +1,6 @@
 {
   "name": "gulp-tinypng-free",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "TinyPNG API wrapper for compressing PNG & JPG images",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,8 @@
     "png",
     "jpg",
     "jpeg",
-    "imagemin"
+    "imagemin",
+    "图片压缩"
   ],
   "author": "fulme",
   "license": "MIT",
