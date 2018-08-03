@@ -13,7 +13,7 @@ Use the upload api of tinypng's homeage to compress images, so can use it withou
 
 ## Install
 ```
-$ npm install --save-dev gulp-tinypng-free
+$ npm i gulp-tinypng-free
 ```
 
 ## How to use
