@@ -1,15 +1,15 @@
-var fs = require('fs');
-var path = require('path');
-var crypto = require('crypto');
-var util = require('gulp-util');
-var request = require('request');
-var through = require('through2');
+var fs = require("fs");
+var path = require("path");
+var crypto = require("crypto");
+var util = require("gulp-util");
+var request = require("request");
+var through = require("through2");
 
 var SKIPPED = [];
 var COMPRESSED = [];
 
-var CATCH_FILE = './sign.json';
-var PLUGIN_NAME = 'gulp-tinypng-free';
+var CATCH_FILE = "./sign.json";
+var PLUGIN_NAME = "gulp-tinypng-free";
 var log = util.log.bind(null, PLUGIN_NAME);
 
 function tinypngFree(opt) {
@@ -19,13 +19,13 @@ function tinypngFree(opt) {
   var force = opt.force || false;
   var hasher = new Hasher(signFile).populate();
 
-  var stream = through.obj(function(file, enc, callback) {
+  var stream = through.obj(function (file, enc, callback) {
     if (file.isNull()) {
       return callback(null, file);
     }
 
     if (file.isStream()) {
-      return callback(createError(file, 'Streaming not supported'));
+      return callback(createError(file, "Streaming not supported"));
     }
 
     if (file.isBuffer()) {
@@ -35,12 +35,12 @@ function tinypngFree(opt) {
         var filename = path.basename(file.path);
 
         SKIPPED.push(filename);
-        log(': [skipped]', util.colors.green('Ok ') + file.relative);
+        log(": [skipped]", util.colors.green("Ok ") + file.relative);
 
         return callback(null, null);
       }
 
-      tinypng(file, function(data) {
+      tinypng(file, function (data) {
         let tinyFile = file.clone();
 
         if (data) {
@@ -49,32 +49,35 @@ function tinypngFree(opt) {
         }
         return callback(null, tinyFile);
       });
+    } else {
+      return callback(null, null);
     }
   });
 
-  stream.on('error', function(err) {
-      log(': error ', util.colors.red(err));
+  stream
+    .on("error", function (err) {
+      log(": error ", util.colors.red(err));
     })
-    .on('end', function() {
-      let str = '';
+    .on("end", function () {
+      let str = "";
       let total = 0;
       let originTotal = 0;
       let ratio;
 
-      COMPRESSED.forEach(function(e) {
+      COMPRESSED.forEach(function (e) {
         total += e.size;
         originTotal += e.originSize;
       });
 
-      ratio = (parseFloat(total / originTotal, 10).toFixed(4) * 100 || 0) + '%';
+      ratio = (parseFloat(total / originTotal, 10).toFixed(4) * 100 || 0) + "%";
 
-      str += ': ' + util.colors.blue('[compress completed] ');
-      str += 'skiped: ' + util.colors.red(SKIPPED.length) + ' imgs, ';
-      str += 'compressed: ' + util.colors.green(COMPRESSED.length) + ' imgs, ';
-      str += 'totalSize: ' + util.colors.green(ratio);
+      str += ": " + util.colors.blue("[compress completed] ");
+      str += "skiped: " + util.colors.red(SKIPPED.length) + " imgs, ";
+      str += "compressed: " + util.colors.green(COMPRESSED.length) + " imgs, ";
+      str += "totalSize: " + util.colors.green(ratio);
       log(str);
 
-      hasher.write()
+      hasher.write();
     });
 
   return stream;
@@ -84,36 +87,43 @@ function Hasher(sigFile) {
   return {
     sigFile: sigFile || false,
     sigs: {},
+    counter: 0,
 
-    calc: function(file, cb) {
-      var md5 = crypto.createHash('md5').update(file.contents).digest('hex');
+    calc: function (file, cb) {
+      var md5 = crypto.createHash("md5").update(file.contents).digest("hex");
 
       cb && cb(md5);
 
       return cb ? this : md5;
     },
-    update: function(file, hash) {
+    update: function (file, hash) {
       this.changed = true;
-      this.sigs[file.path.replace(file.cwd, '')] = hash;
+      this.sigs[file.path.replace(file.cwd, "")] = hash;
+
+      if (++this.counter % 5 === 0) {
+        this.write();
+      }
 
       return this;
     },
-    compare: function(file, cb) {
+    compare: function (file, cb) {
       var md5 = this.calc(file),
-        filepath = file.path.replace(file.cwd, ''),
-        result = (filepath in this.sigs && md5 === this.sigs[filepath]);
+        filepath = file.path.replace(file.cwd, ""),
+        result = filepath in this.sigs && md5 === this.sigs[filepath];
 
-      return cb ? this : {
-        match: result,
-        hash: md5
-      };
+      return cb
+        ? this
+        : {
+            match: result,
+            hash: md5,
+          };
     },
-    populate: function() {
+    populate: function () {
       var data = false;
 
       if (this.sigFile) {
         try {
-          data = fs.readFileSync(this.sigFile, 'utf-8');
+          data = fs.readFileSync(this.sigFile, "utf-8");
           if (data) data = JSON.parse(data);
         } catch (err) {
           // meh
@@ -124,7 +134,7 @@ function Hasher(sigFile) {
 
       return this;
     },
-    write: function() {
+    write: function () {
       if (this.changed) {
         try {
           fs.writeFileSync(this.sigFile, JSON.stringify(this.sigs));
@@ -134,70 +144,83 @@ function Hasher(sigFile) {
       }
 
       return this;
-    }
+    },
   };
 }
 
 function tinypng(file, callback) {
-  log(': [tinypng request]', file.relative);
+  log(": [tinypng request]", file.relative);
 
-  request({
-    url: 'https://tinypng.com/web/shrink',
-    method: "post",
-    headers: {
-      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      "Accept-Encoding": "gzip, deflate",
-      "Accept-Language": "zh-cn,zh;q=0.8,en-us;q=0.5,en;q=0.3",
-      "Cache-Control": "no-cache",
-      "Pragma": "no-cache",
-      "Connection": "keep-alive",
-      "Host": "tinypng.com",
-      "DNT": 1,
-      "Referer": "https://tinypng.com/",
-      "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:42.0) Gecko/20100101 Firefox/42.0"
+  request(
+    {
+      url: "https://tinypng.com/web/shrink",
+      method: "post",
+      headers: {
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept-Language": "zh-cn,zh;q=0.8,en-us;q=0.5,en;q=0.3",
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+        Connection: "keep-alive",
+        Host: "tinypng.com",
+        DNT: 1,
+        Referer: "https://tinypng.com/",
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:42.0) Gecko/20100101 Firefox/42.0",
+      },
+      body: file.contents,
     },
-    body: file.contents
-  }, function(error, response, body) {
-    var results, filename;
+    function (error, response, body) {
+      var results, filename;
 
-    if (!error) {
-      filename = path.basename(file.path);
-      results = JSON.parse(body);
+      if (!error) {
+        filename = path.basename(file.path);
+        results = JSON.parse(body);
 
-      if (results.output && results.output.url) {
-        request.get({
-          url: results.output.url,
-          encoding: null
-        }, function(err, res, body) {
-          if (err) {
-            SKIPPED.push(filename);
-            log('[error]: ', filename + ' ' + err);
-          } else {
-            var output = results.output;
+        if (results.output && results.output.url) {
+          request.get(
+            {
+              url: results.output.url,
+              encoding: null,
+            },
+            function (err, res, body) {
+              if (err) {
+                SKIPPED.push(filename);
+                log("[error]: ", filename + " " + err);
+              } else {
+                var output = results.output;
 
-            log(': [compressing]', util.colors.green('Ok ') +
-              file.relative +
-              util.colors.green(' (' + (output.ratio * 100).toFixed(1) + '%)'));
+                log(
+                  ": [compressing]",
+                  util.colors.green("Ok ") +
+                    file.relative +
+                    util.colors.green(
+                      " (" + (output.ratio * 100).toFixed(1) + "%)"
+                    )
+                );
 
-            COMPRESSED.push({
-              name: filename,
-              size: output.size,
-              ratio: 1 - output.ratio,
-              originSize: results.input.size
-            });
-          }
+                COMPRESSED.push({
+                  name: filename,
+                  size: output.size,
+                  ratio: 1 - output.ratio,
+                  originSize: results.input.size,
+                });
+              }
 
-          callback(err ? null : new Buffer(body));
-        });
+              callback(err ? null : new Buffer(body));
+            }
+          );
+        } else {
+          log("[error]: ", filename + " " + results.message);
+          callback(null);
+        }
       } else {
-        log('[error]: ', filename + ' ' + results.message);
+        SKIPPED.push(filename);
         callback(null);
       }
-    } else {
-      SKIPPED.push(filename);
-      callback(null);
     }
-  });
+  );
 }
 
 module.exports = tinypngFree;
