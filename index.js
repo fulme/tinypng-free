@@ -7,6 +7,7 @@ var through = require("through2");
 
 var SKIPPED = [];
 var COMPRESSED = [];
+var ERRORS = [];
 
 var CATCH_FILE = "./sign.json";
 var PLUGIN_NAME = "gulp-tinypng-free";
@@ -72,6 +73,7 @@ function tinypngFree(opt) {
       ratio = (parseFloat(total / originTotal, 10).toFixed(4) * 100 || 0) + "%";
 
       str += ": " + util.colors.blue("[compress completed] ");
+      str += "errors: " + util.colors.red(ERRORS.length) + " imgs, ";
       str += "skiped: " + util.colors.red(SKIPPED.length) + " imgs, ";
       str += "compressed: " + util.colors.green(COMPRESSED.length) + " imgs, ";
       str += "totalSize: " + util.colors.green(ratio);
@@ -212,6 +214,7 @@ function tinypng(file, callback) {
             }
           );
         } else {
+          ERRORS.push(filename);
           log("[error]: ", filename + " " + results.message);
           callback(null);
         }
