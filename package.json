@@ -1,6 +1,6 @@
 {
   "name": "gulp-tinypng-free",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "TinyPNG API wrapper for compressing PNG & JPG images",
   "main": "index.js",
   "scripts": {

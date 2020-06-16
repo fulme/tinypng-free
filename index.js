@@ -1,89 +1,17 @@
-var fs = require("fs");
-var path = require("path");
-var crypto = require("crypto");
-var util = require("gulp-util");
-var request = require("request");
-var through = require("through2");
+const fs = require("fs");
+const path = require("path");
+const crypto = require("crypto");
+const util = require("gulp-util");
+const request = require("request");
+const through = require("through2");
 
-var SKIPPED = [];
-var COMPRESSED = [];
-var ERRORS = [];
+const SKIPPED = [];
+const COMPRESSED = [];
+const ERRORS = [];
 
-var CATCH_FILE = "./sign.json";
-var PLUGIN_NAME = "gulp-tinypng-free";
-var log = util.log.bind(null, PLUGIN_NAME);
-
-function tinypngFree(opt) {
-  opt = opt || {};
-
-  var signFile = opt.signFile || CATCH_FILE;
-  var force = opt.force || false;
-  var hasher = new Hasher(signFile).populate();
-
-  var stream = through.obj(function (file, enc, callback) {
-    if (file.isNull()) {
-      return callback(null, file);
-    }
-
-    if (file.isStream()) {
-      return callback(createError(file, "Streaming not supported"));
-    }
-
-    if (file.isBuffer()) {
-      var result = hasher.compare(file);
-
-      if (result.match && !force) {
-        var filename = path.basename(file.path);
-
-        SKIPPED.push(filename);
-        log(": [skipped]", util.colors.green("Ok ") + file.relative);
-
-        return callback(null, null);
-      }
-
-      tinypng(file, function (data) {
-        let tinyFile = file.clone();
-
-        if (data) {
-          tinyFile.contents = data;
-          hasher.update(file, hasher.calc(file));
-        }
-        return callback(null, tinyFile);
-      });
-    } else {
-      return callback(null, null);
-    }
-  });
-
-  stream
-    .on("error", function (err) {
-      log(": error ", util.colors.red(err));
-    })
-    .on("end", function () {
-      let str = "";
-      let total = 0;
-      let originTotal = 0;
-      let ratio;
-
-      COMPRESSED.forEach(function (e) {
-        total += e.size;
-        originTotal += e.originSize;
-      });
-
-      ratio = (parseFloat(total / originTotal, 10).toFixed(4) * 100 || 0) + "%";
-
-      str += ": " + util.colors.blue("[compress completed] ");
-      str += "errors: " + util.colors.red(ERRORS.length) + " imgs, ";
-      str += "skiped: " + util.colors.red(SKIPPED.length) + " imgs, ";
-      str += "compressed: " + util.colors.green(COMPRESSED.length) + " imgs, ";
-      str += "totalSize: " + util.colors.green(ratio);
-      log(str);
-
-      hasher.write();
-    });
-
-  return stream;
-}
+const CATCH_FILE = "./sign.json";
+const PLUGIN_NAME = "gulp-tinypng-free";
+const log = util.log.bind(null, PLUGIN_NAME);
 
 function Hasher(sigFile) {
   return {
@@ -147,7 +75,7 @@ function Hasher(sigFile) {
 }
 
 function tinypng(file, callback) {
-  log(": [tinypng request]", file.relative);
+  log(": [request]", file.relative);
 
   request(
     {
@@ -220,6 +148,86 @@ function tinypng(file, callback) {
       }
     }
   );
+}
+
+function tinypngFree(opt) {
+  opt = opt || {};
+
+  const signFile = opt.signFile || CATCH_FILE;
+  const force = opt.force || false;
+  const hasher = new Hasher(signFile).populate();
+
+  const stream = through.obj(function (file, enc, callback) {
+    const self = this;
+
+    if (file.isNull()) {
+      self.push(file);
+      return callback(null, file);
+    }
+
+    if (file.isStream()) {
+      self.push(file);
+      return callback(null, file);
+    }
+
+    if (file.isBuffer()) {
+      var result = hasher.compare(file);
+
+      if (result.match && !force) {
+        const filename = path.basename(file.path);
+        SKIPPED.push(filename);
+
+        log(": [skipped]", util.colors.green("Ok ") + file.relative);
+
+        self.push(file);
+        return callback(null, file);
+      }
+
+      tinypng(file, function (data) {
+        const tinyFile = file.clone();
+
+        if (data) {
+          tinyFile.contents = data;
+          hasher.update(file, hasher.calc(tinyFile));
+        }
+
+        self.push(tinyFile);
+        return callback(null, tinyFile);
+      });
+    } else {
+      self.push(file);
+      return callback(null, file);
+    }
+  });
+
+  stream
+    .on("error", function (err) {
+      log(": error ", util.colors.red(err));
+    })
+    .on("end", function () {
+      let str = "";
+      let total = 0;
+      let originTotal = 0;
+      let ratio;
+
+      COMPRESSED.forEach(function (e) {
+        total += e.size;
+        originTotal += e.originSize;
+      });
+
+      ratio = (parseFloat(total / originTotal, 10).toFixed(4) * 100 || 0) + "%";
+
+      str += ": " + util.colors.blue("[compress completed] ");
+      str += "errors: " + util.colors.red(ERRORS.length) + " imgs, ";
+      str += "skiped: " + util.colors.green(SKIPPED.length) + " imgs, ";
+      str += "compressed: " + util.colors.green(COMPRESSED.length) + " imgs, ";
+      str += "totalSize: " + util.colors.green(ratio);
+      log(str);
+
+      hasher.write();
+    });
+
+  return stream;
 }
 
 module.exports = tinypngFree;
