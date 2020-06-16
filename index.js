@@ -89,7 +89,6 @@ function Hasher(sigFile) {
   return {
     sigFile: sigFile || false,
     sigs: {},
-    counter: 0,
 
     calc: function (file, cb) {
       var md5 = crypto.createHash("md5").update(file.contents).digest("hex");
@@ -102,10 +101,7 @@ function Hasher(sigFile) {
       this.changed = true;
       this.sigs[file.path.replace(file.cwd, "")] = hash;
 
-      if (++this.counter % 5 === 0) {
-        this.write();
-      }
-
+      this.write();
       return this;
     },
     compare: function (file, cb) {
@@ -188,7 +184,7 @@ function tinypng(file, callback) {
             },
             function (err, res, body) {
               if (err) {
-                SKIPPED.push(filename);
+                ERRORS.push(filename);
                 log("[error]: ", filename + " " + err);
               } else {
                 var output = results.output;
@@ -219,7 +215,7 @@ function tinypng(file, callback) {
           callback(null);
         }
       } else {
-        SKIPPED.push(filename);
+        ERRORS.push(filename);
         callback(null);
       }
     }
