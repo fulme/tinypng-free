@@ -1,6 +1,6 @@
 {
   "name": "gulp-tinypng-free",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "TinyPNG API wrapper for compressing PNG & JPG images",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/fulme/tinypng-free.git"
   },
-  "devDependencies": {
+  "dependencies": {
     "gulp": "~3.9.1",
     "gulp-util": "~2.2.14",
     "request": "~2.68.0",
