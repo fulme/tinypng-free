@@ -13,6 +13,14 @@ const CATCH_FILE = "./sign.json";
 const PLUGIN_NAME = "gulp-tinypng-free";
 const log = util.log.bind(null, PLUGIN_NAME);
 
+function parse(str, def) {
+  try {
+    return JSON.parse(str);
+  } catch(err) {
+    return def || {};
+  }
+}
+
 function Hasher(sigFile) {
   return {
     sigFile: sigFile || false,
@@ -50,7 +58,7 @@ function Hasher(sigFile) {
       if (this.sigFile) {
         try {
           data = fs.readFileSync(this.sigFile, "utf-8");
-          if (data) data = JSON.parse(data);
+          if (data) data = parse(data);
         } catch (err) {
           // meh
         }
@@ -102,7 +110,7 @@ function tinypng(file, callback) {
 
       if (!error) {
         filename = path.basename(file.path);
-        results = JSON.parse(body);
+        results = parse(body);
 
         if (results.output && results.output.url) {
           request.get(
