@@ -11,7 +11,7 @@
     "url": "git+https://github.com/fulme/tinypng-free.git"
   },
   "dependencies": {
-    "gulp": "~3.9.1",
+    "gulp": "~4.0.2",
     "gulp-util": "~2.2.14",
     "request": "~2.68.0",
     "through2": "~0.4.2",
